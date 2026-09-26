@@ -1,0 +1,96 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "mysql" url = env("DATABASE_URL") }
+
+model Vehicle {
+  id String @id @default(cuid())
+  code String @unique
+  name String
+  type String?
+  year Int?
+  transmission String?
+  fuel String?
+  color String?
+  price Decimal? @db.Decimal(15,2)
+  stock Int @default(0)
+  status String @default("AVAILABLE")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  leads Lead[]
+}
+
+model Lead {
+  id String @id @default(cuid())
+  name String
+  phone String
+  city String?
+  company String?
+  businessType String?
+  budget Decimal? @db.Decimal(15,2)
+  status String @default("NEW")
+  source String?
+  vehicleId String?
+  vehicle Vehicle? @relation(fields:[vehicleId],references:[id])
+  notes String? @db.Text
+  nextFollowUp DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  activities LeadActivity[]
+}
+
+model LeadActivity {
+  id String @id @default(cuid())
+  leadId String
+  type String
+  content String @db.Text
+  createdAt DateTime @default(now())
+  lead Lead @relation(fields:[leadId],references:[id],onDelete:Cascade)
+}
+
+model AiConversation {
+  id String @id @default(cuid())
+  channel String
+  externalId String?
+  customerName String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  messages AiMessage[]
+}
+
+model AiMessage {
+  id String @id @default(cuid())
+  conversationId String
+  role String
+  content String @db.Text
+  createdAt DateTime @default(now())
+  conversation AiConversation @relation(fields:[conversationId],references:[id],onDelete:Cascade)
+}
+
+model Campaign {
+  id String @id @default(cuid())
+  name String
+  platform String?
+  status String @default("DRAFT")
+  scheduledAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GeneratedContent {
+  id String @id @default(cuid())
+  campaignId String?
+  kind String
+  prompt String? @db.Text
+  content String? @db.Text
+  imageUrl String?
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String?
+  action String
+  entity String
+  entityId String?
+  metadata String? @db.Text
+  createdAt DateTime @default(now())
+}
