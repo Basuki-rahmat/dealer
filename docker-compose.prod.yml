@@ -1,0 +1,32 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MYSQL_DATABASE: dealer
+      MYSQL_USER: dealer
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes: [mysql_data:/var/lib/mysql]
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    restart: unless-stopped
+    env_file: .env
+    depends_on: [mysql,redis]
+    ports: ["4000:4000"]
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    restart: unless-stopped
+    env_file: .env
+    depends_on: [api]
+    ports: ["3000:3000"]
+volumes:
+  mysql_data:
