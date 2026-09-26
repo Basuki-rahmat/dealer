@@ -1,0 +1,28 @@
+name: ECC Engineering Checks
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  ecc-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check ECC profile
+        run: |
+          test -f AGENTS.md
+          test -f .ecc/README.md
+          test -f .ecc/workflows/feature.md
+          test -f .ecc/rules/security.md
+          test -f .ecc/rules/database.md
+          echo "Dealer ECC profile is present."
+      - name: Check obvious secret files
+        shell: bash
+        run: |
+          if find . -type f \( -name ".env" -o -name "*.pem" -o -name "*.key" \) -not -path "./.git/*" | grep -q .; then
+            echo "Potential secret file detected."
+            exit 1
+          fi
